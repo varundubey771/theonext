@@ -7,18 +7,31 @@ import relativeTime from 'dayjs/plugin/relativeTime'
 import dayjs from "dayjs";
 import LoadingSpinner from "~/components/loading";
 import { RouterOutputs, api } from "~/utils/api";
+import { useState } from "react";
 
 
 dayjs.extend(relativeTime)
 
 const CreatePostWizard = ()=>{
+  const [input, setInput]=useState('')
   const {user} = useUser()
+
+  const ctx=api.useContext()
+
   if(!user) return null
+  const {mutate,isLoading:isPosting} = api.posts.create.useMutation({
+    onSuccess:()=>{
+      setInput("")
+      ctx.posts.getAll.invalidate()
+    }
+  })
+
 
   return (
-<div className="flex  gap-2 w-full">
+<div className="flex   gap-2 w-full">
       <Image className="m-2 rounded-full" width={40} height={40} alt="profilepic" src={user.profileImageUrl} ></Image>
-      <input  className="bg-transparent w-full m-2 grow outline-none" placeholder="Type something"></input>
+      <input disabled={isPosting} value={input} onChange={(e)=>{setInput(e.target.value)}} className="bg-transparent w-full m-2 grow outline-none" placeholder="Type something"></input>
+      <button onClick={()=>mutate({content:input})}>Post</button>
       </div>
   )
 }
@@ -38,7 +51,7 @@ const PostView= (props:PostWithUser)=>{
 
 
   return (
-    <div className="p-8 border-b w-full flex flex-row items-center gap-4 border-slate-400" key={post.id}>
+    <div className="p-8  border-b w-full flex flex-row items-center gap-4 border-slate-400" key={post.id}>
     <Image src={imgSrc} width={40} height={40} alt="profile_pic">
       </Image ><div className="flex flex-col">
         <div className="flex gap-3 font-semibold">
@@ -61,7 +74,7 @@ const Feed = ()=>{
 
   return (
     <div className="flex  flex-col w-full">
-    {[...data]?.map((fullPost)=>(
+    {data.map((fullPost)=>(
  <PostView {...fullPost} key={fullPost.post.id}></PostView>
 
     ))}

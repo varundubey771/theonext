@@ -42,8 +42,15 @@ const createInnerTRPCContext = (_opts: CreateContextOptions) => {
  *
  * @see https://trpc.io/docs/context
  */
-export const createTRPCContext = (_opts: CreateNextContextOptions) => {
-  return createInnerTRPCContext({});
+export const createTRPCContext = (opts: CreateNextContextOptions) => {
+  //req is nextApi generic request which contains headers which contains jwt getAuth is clerk method to get basic user details directly from our server
+  const {req} = opts
+  const sesh = getAuth(req)
+
+  return {
+    prisma,
+    currentUser:sesh
+  };
 };
 
 /**
@@ -53,9 +60,10 @@ export const createTRPCContext = (_opts: CreateNextContextOptions) => {
  * ZodErrors so that you get typesafety on the frontend if your procedure fails due to validation
  * errors on the backend.
  */
-import { initTRPC } from "@trpc/server";
+import { TRPCError, initTRPC } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
+import { getAuth } from "@clerk/nextjs/server";
 
 const t = initTRPC.context<typeof createTRPCContext>().create({
   transformer: superjson,
@@ -93,3 +101,25 @@ export const createTRPCRouter = t.router;
  * are logged in.
  */
 export const publicProcedure = t.procedure;
+
+const enforceUserIsAuthed=  t.middleware(async({ctx,next})=>{
+  if(!ctx.currentUser){
+    throw new TRPCError({
+      code:"UNAUTHORIZED"
+    })
+  }
+  return next({
+    ctx:{
+      session:ctx.currentUser
+    }
+  })
+
+})
+
+export const privateProcedure = t.procedure.use(enforceUserIsAuthed)
+
+//middleware in next js is a process which runs on an edge function but here middleware is just a process which runs before a generic api call
+
+
+
+

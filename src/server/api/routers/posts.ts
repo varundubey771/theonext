@@ -5,7 +5,7 @@ import { TRPCError } from "@trpc/server";
 import { use } from "react";
 import { z } from "zod";
 
-import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import { createTRPCRouter, privateProcedure, publicProcedure } from "~/server/api/trpc";
 
 const filterUserForClient = (user: User)=>{
   return {id:user,
@@ -18,8 +18,9 @@ export const postsRouter = createTRPCRouter({
 
     const posts= await ctx.prisma.post.findMany({
       take:100,
+      orderBy:[{createdAt:"desc"}]
     });
-
+    //get users corresponding to all posts
     const users= (await clerkClient.users.getUserList({
       userId:  posts.map((post)=>post.authorId),
       limit:100
@@ -43,4 +44,20 @@ export const postsRouter = createTRPCRouter({
     }
     )
   }),
+
+  create:privateProcedure.input(z.object({
+    content:z.string().min(1).max(280)
+  })).mutation(async ({ctx,input})=>{
+    let authorId = ctx.currentUser.userId
+    if(!authorId){
+      authorId='-'
+    }
+    const post = await ctx.prisma.post.create({
+      data:{
+        authorId:authorId,
+        content:input.content
+      }
+    })
+    return post
+  })
 });
