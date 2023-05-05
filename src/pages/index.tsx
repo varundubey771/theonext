@@ -8,6 +8,7 @@ import dayjs from "dayjs";
 import LoadingSpinner from "~/components/loading";
 import { RouterOutputs, api } from "~/utils/api";
 import { useState } from "react";
+import { toast } from "react-hot-toast";
 
 
 dayjs.extend(relativeTime)
@@ -23,6 +24,15 @@ const CreatePostWizard = ()=>{
     onSuccess:()=>{
       setInput("")
       ctx.posts.getAll.invalidate()
+    },
+    onError:(e)=>{
+      const errorMessage= e.data?.zodError?.fieldErrors.content
+      if (errorMessage && errorMessage[0]){
+toast.error(errorMessage[0])
+
+      }
+      else{toast.error("failed to post data")}
+
     }
   })
 
