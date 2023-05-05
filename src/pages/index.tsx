@@ -53,8 +53,10 @@ const PostView= (props:PostWithUser)=>{
   const {post,author}=props
   const idd=String(author?.id.id)
   let imgSrc=""
-  if(!author){
-    let author='-'
+
+  if(!author ||!author?.username){
+    toast.error("something went wrong with auth")
+    return <div></div>
   }
   if(author)
   {imgSrc= author?.profileImageUrl}
