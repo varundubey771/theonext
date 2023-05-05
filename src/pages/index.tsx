@@ -23,7 +23,7 @@ const CreatePostWizard = ()=>{
   const {mutate,isLoading:isPosting} = api.posts.create.useMutation({
     onSuccess:()=>{
       setInput("")
-      ctx.posts.getAll.invalidate()
+      void ctx.posts.getAll.invalidate()
     },
     onError:(e)=>{
       const errorMessage= e.data?.zodError?.fieldErrors.content
@@ -53,6 +53,9 @@ const PostView= (props:PostWithUser)=>{
   const {post,author}=props
   const idd=String(author?.id.id)
   let imgSrc=""
+  if(!author){
+    let author='-'
+  }
   if(author)
   {imgSrc= author?.profileImageUrl}
   else{
