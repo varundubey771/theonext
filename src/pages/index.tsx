@@ -41,7 +41,8 @@ toast.error(errorMessage[0])
 <div className="flex   gap-2 w-full">
       <Image className="m-2 rounded-full" width={40} height={40} alt="profilepic" src={user.profileImageUrl} ></Image>
       <input disabled={isPosting} value={input} onChange={(e)=>{setInput(e.target.value)}} className="bg-transparent w-full m-2 grow outline-none" placeholder="Type something"></input>
-      <button onClick={()=>mutate({content:input})}>Post</button>
+      {!isPosting&&<button disabled={isPosting} onClick={()=>mutate({content:input})}>Post</button>}
+      {isPosting&&<div className="flex items-center justify-center"><LoadingSpinner/></div>}
       </div>
   )
 }
@@ -81,7 +82,7 @@ const PostView= (props:PostWithUser)=>{
 const Feed = ()=>{
   const {data, isLoading:postsLoading } = api.posts.getAll.useQuery()
   if(postsLoading){
-    return (<LoadingSpinner></LoadingSpinner>)
+    return (< div className="h-full w-full justify-center items-center flex "><LoadingSpinner size={40}></LoadingSpinner></div>)
   }
   if(!data){
     return <div>Something went wrong</div>
