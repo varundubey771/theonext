@@ -40,7 +40,15 @@ toast.error(errorMessage[0])
   return (
 <div className="flex   gap-2 w-full">
       <Image className="m-2 rounded-full" width={40} height={40} alt="profilepic" src={user.profileImageUrl} ></Image>
-      <input disabled={isPosting} value={input} onChange={(e)=>{setInput(e.target.value)}} className="bg-transparent w-full m-2 grow outline-none" placeholder="Type something"></input>
+      <input onKeyDown={(e)=>{
+        if(e.key=="Enter"){
+          e.preventDefault()
+          mutate({content:input
+          })
+
+
+        }
+      }} disabled={isPosting} value={input} onChange={(e)=>{setInput(e.target.value)}} className="bg-transparent w-full m-2 grow outline-none" placeholder="Type something"></input>
       {!isPosting&&<button disabled={isPosting} onClick={()=>mutate({content:input})}>Post</button>}
       {isPosting&&<div className="flex items-center justify-center"><LoadingSpinner/></div>}
       </div>
@@ -71,8 +79,10 @@ const PostView= (props:PostWithUser)=>{
     <Image src={imgSrc} width={40} height={40} alt="profile_pic">
       </Image ><div className="flex flex-col">
         <div className="flex gap-3 font-semibold">
-        <label>{`@${author?.username}`}</label>
-        <label>{`${dayjs(post?.createdAt).fromNow()}`}</label></div>
+          <Link href={`/@${author.username}`}> <label>{`@${author?.username}`}</label></Link>
+          <Link href={`/@${author.username}`}>
+        <label>{`${dayjs(post?.createdAt).fromNow()}`}</label>
+        </Link></div>
         <div>{post.content}</div></div></div>
   )
 
