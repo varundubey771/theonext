@@ -14,7 +14,7 @@ const ProfileFeed = (props:{userId:string})=>{
   return (
     <div className="flex flex-col">
       {data.map((post)=>(
-        <div>
+        <div key={post.id}>
         <div>{post.id}</div>
 <div>{post.content}</div>
 </div>
@@ -43,7 +43,7 @@ if(!data){
         <link rel="icon" href="/favicon.ico" />
       </Head>
 <PageLayout>
-  <div className=" relative h-48 w-full bg-slate-600">
+  <div className=" relative h-32 w-full bg-slate-600">
     <Image className="-mb-[64px] rounded-full absolute bottom-0 left-0 ml-4 border-4 border-black"  src={data.profileImageUrl} width={128} height={128} alt={`${data.username??""}'s profile pic`}></Image>
 
   </div>
@@ -68,7 +68,7 @@ import LoadingSpinner from "~/components/loading";
 
 
 
-export const getStaticProps  = async(context: { params: { slug: any; }; })=>{
+export const getStaticProps  = async(context: { params: { slug: string; }; })=>{
 
 
 
