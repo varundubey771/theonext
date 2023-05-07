@@ -6,13 +6,9 @@ import { use } from "react";
 import { z } from "zod";
 import {Ratelimit} from "@upstash/ratelimit";
 import {Redis} from "@upstash/redis";
+import { filterUserForClient } from "~/server/helpers/filterUserForClient";
 
 import { createTRPCRouter, privateProcedure, publicProcedure } from "~/server/api/trpc";
-
-const filterUserForClient = (user: User)=>{
-  return {id:user,
-  username:user.username,profileImageUrl:user.profileImageUrl}
-}
 
 
 
@@ -46,7 +42,7 @@ export const postsRouter = createTRPCRouter({
 
     return posts.map((post)=>
       {
-        const author= users.find((user)=>String(user.id.id)===post.authorId)
+        const author= users.find((user)=>String(user.id)===post.authorId)
         if(!author) throw new TRPCError({
           code:"INTERNAL_SERVER_ERROR",
           message:"author for post not found"
@@ -54,16 +50,18 @@ export const postsRouter = createTRPCRouter({
 
         return {
         post,
-        author:(users.find((user)=>String(user.id.id)===post.authorId))
+        author:(users.find((user)=>String(user.id)===post.authorId))
       }
     }
     )
   }),
 
+
+
   create:privateProcedure.input(z.object({
     content:z.string().min(4).max(280)
   })).mutation(async ({ctx,input})=>{
-    let authorId = ctx.currentUser.userId
+    let authorId = ctx.currentUser
 
 
 
@@ -81,5 +79,18 @@ export const postsRouter = createTRPCRouter({
       }
     })
     return post
-  })
+  }),
+
+
+  getPostByName:publicProcedure.input(z.object({userId:z.string()})).query(async({ctx,input})=>{
+    console.log(input.userId)
+    const posts= await ctx.prisma.post.findMany({
+       where:{
+        authorId:input.userId
+       },
+       take:100,
+       orderBy:[{createdAt:"desc"}]
+    })
+    return posts
+})
 });
