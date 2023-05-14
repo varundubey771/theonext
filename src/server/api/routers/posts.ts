@@ -9,8 +9,34 @@ import {Redis} from "@upstash/redis";
 import { filterUserForClient } from "~/server/helpers/filterUserForClient";
 
 import { createTRPCRouter, privateProcedure, publicProcedure } from "~/server/api/trpc";
+import type { Post } from "@prisma/client";
 
 
+const addUserDataToPost = async (posts:Post[])=>{
+  const users= (await clerkClient.users.getUserList({
+    userId:  posts.map((post)=>post.authorId),
+    limit:100
+  })).map(filterUserForClient)
+
+  console.log(users[0])
+  console.log(posts)
+
+  return posts.map((post)=>
+    {
+      const author= users.find((user)=>String(user.id)===post.authorId)
+      if(!author) throw new TRPCError({
+        code:"INTERNAL_SERVER_ERROR",
+        message:"author for post not found"
+      })
+
+      return {
+      post,
+      author:(users.find((user)=>String(user.id)===post.authorId))
+    }
+  }
+  )
+
+}
 
 const redis = new Redis({
   url: 'UPSTASH_REDIS_REST_URL',
@@ -32,28 +58,8 @@ export const postsRouter = createTRPCRouter({
       orderBy:[{createdAt:"desc"}]
     });
     //get users corresponding to all posts
-    const users= (await clerkClient.users.getUserList({
-      userId:  posts.map((post)=>post.authorId),
-      limit:100
-    })).map(filterUserForClient)
-
-    console.log(users[0])
-    console.log(posts)
-
-    return posts.map((post)=>
-      {
-        const author= users.find((user)=>String(user.id)===post.authorId)
-        if(!author) throw new TRPCError({
-          code:"INTERNAL_SERVER_ERROR",
-          message:"author for post not found"
-        })
-
-        return {
-        post,
-        author:(users.find((user)=>String(user.id)===post.authorId))
-      }
-    }
-    )
+const finalResp=addUserDataToPost(posts)
+return finalResp
   }),
 
 
@@ -91,6 +97,6 @@ export const postsRouter = createTRPCRouter({
        take:100,
        orderBy:[{createdAt:"desc"}]
     })
-    return posts
+    return addUserDataToPost(posts)
 })
 });

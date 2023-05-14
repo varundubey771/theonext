@@ -2,26 +2,24 @@ import { SignIn,useUser,SignOutButton } from "@clerk/nextjs";
 import { type NextPage } from "next";
 import Image from "next/image";
 import Head from "next/head";
+import { ProfileFeed } from "~/components/postview";
 
 import { api } from "~/utils/api";
-const ProfileFeed = (props:{userId:string})=>{
-  const {data, isLoading}=api.posts.getPostByName.useQuery({
-    userId:props.userId
-  })
-  console.log("gr8gr8gr8gr8",data)
-  if (isLoading) return <LoadingSpinner></LoadingSpinner>
-  if(!data||data.length===0) return <div >User has not posted</div>
-  return (
-    <div className="flex flex-col">
-      {data.map((post)=>(
-        <div key={post.id}>
-        <div>{post.id}</div>
-<div>{post.content}</div>
-</div>
-      ))}
-       </div>
-  )
-}
+// const ProfileFeed = (props:{userId:string})=>{
+//   const {data, isLoading}=api.posts.getPostByName.useQuery({
+//     userId:props.userId
+//   })
+//   console.log("gr8gr8gr8gr8",data)
+//   if (isLoading) return <LoadingSpinner></LoadingSpinner>
+//   if(!data||data.length===0) return <div >User has not posted</div>
+//   return (
+//     <div className="flex flex-col">
+//       {data.map((post)=>(
+// <PostView {...post} key={post.author?.id}></PostView>
+//       ))}
+//        </div>
+//   )
+// }
 
 
 
@@ -30,7 +28,7 @@ const ProfilePage: NextPage<{username:string}> = ({username}) => {
 const {data,isLoading} =api.profle.getUserByUserName.useQuery({username:username})
 if(isLoading){
   console.log("is loadinggggggg")
-  return <div></div>
+  return <LoadingSpinner></LoadingSpinner>
 }
 if(!data){
   return <div>404</div>
@@ -65,6 +63,7 @@ import superjson from "superjson"
 import { getAuth } from "@clerk/nextjs/server";
 import PageLayout from "~/components/layout";
 import LoadingSpinner from "~/components/loading";
+import { PostView } from "~/components/postview";
 
 
 
