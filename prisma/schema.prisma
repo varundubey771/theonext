@@ -2,9 +2,8 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 datasource db {
-  provider = "mysql"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
-  relationMode = "prisma"
 }
 
 generator client {
@@ -12,13 +11,10 @@ generator client {
 }
 
 
-
-
-
 model Post{
-    id       String @id @default(cuid())
+    id  String @id @default(auto()) @db.ObjectId @map("_id")
     createdAt DateTime @default(now())
-    content String @db.VarChar(255)
+    content String @db.String
     authorId String
     @@index([authorId])
 }
